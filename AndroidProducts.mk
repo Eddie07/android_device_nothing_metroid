@@ -1,5 +1,7 @@
 PRODUCT_MAKEFILES := \
-   $(LOCAL_DIR)/sun.mk
+    $(LOCAL_DIR)/lineage_metroid.mk
 
 COMMON_LUNCH_CHOICES := \
-        sun-userdebug
+    lineage_metroid-bp2a-user \
+    lineage_metroid-bp2a-userdebug \
+    lineage_metroid-bp2a-eng

@@ -4,6 +4,8 @@
 #
 # TODO(b/124534788): Temporarily allow eng and debug LOCAL_MODULE_TAGS
 
+DEVICE_PATH := device/nothing/metroid
+
 #BOARD_SYSTEMSDK_VERSIONS := 34
 
 BUILD_BROKEN_MISSING_REQUIRED_MODULES  := true

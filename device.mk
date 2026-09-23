@@ -16,6 +16,17 @@ ENABLE_VIRTUAL_AB := true
 # Enable virtual A/B compression
 $(call inherit-product, $(SRC_TARGET_DIR)/product/generic_ramdisk.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota/vabc_features.mk)
+
+# Virtual A/B
+$(call inherit-product, $(SRC_TARGET_DIR)/product/virtual_ab_ota/launch_with_vendor_ramdisk.mk)
+
+# Dalvik vm configs
+$(call inherit-product, frameworks/native/build/phone-xhdpi-6144-dalvik-heap.mk)
+
+# Qualcomm
+$(call soong_config_set,rfs,mpss_firmware_symlink_target,modem_firmware)
+$(call inherit-product, hardware/qcom-caf/common/common.mk)
+
 PRODUCT_VIRTUAL_AB_COMPRESSION_METHOD := lz4
 PRODUCT_VENDOR_PROPERTIES += ro.virtual_ab.compression.threads=true
 
@@ -28,6 +39,7 @@ PRODUCT_SET_DEBUGFS_RESTRICTIONS := true
 
 #Enable vm support
 TARGET_ENABLE_VM_SUPPORT := true
+$(call inherit-product, packages/modules/Virtualization/apex/product_packages.mk)
 
 #Enable SMCI-Listeners.
 TARGET_ENABLE_SMCI_SYSLISTENER := true
@@ -77,13 +89,6 @@ TARGET_SKIP_OTA_PACKAGE := true
 
 # Enable AVB 2.0
 BOARD_AVB_ENABLE := true
-
-# Disable verified boot checks in abl if AVB is not enabled
-ifeq ($(BOARD_AVB_ENABLE), true)
-BOARD_ABL_SIMPLE := false
-else
-BOARD_ABL_SIMPLE := true
-endif
 
 # Set SYSTEMEXT_SEPARATE_PARTITION_ENABLE if was not already set (set earlier via build.sh).
 SYSTEMEXT_SEPARATE_PARTITION_ENABLE := true
@@ -252,7 +257,6 @@ PRODUCT_PROPERTY_OVERRIDES += ro.control_privapp_permissions=enforce
 TARGET_DEFINES_DALVIK_HEAP := true
 
 $(call inherit-product, $(SRC_TARGET_DIR)/product/core_64_bit_only.mk)
-$(call inherit-product, device/qcom/vendor-common/common64.mk)
 $(call inherit-product, frameworks/native/build/phone-xhdpi-6144-dalvik-heap.mk)
 
 # beluga settings
@@ -262,24 +266,6 @@ PRODUCT_PROPERTY_OVERRIDES += \
     ro.vendor.beluga.s=0x900 \
     ro.vendor.beluga.t=0x240
 
-###########
-# Target naming
-PRODUCT_NAME := sun
-PRODUCT_DEVICE := sun
-PRODUCT_BRAND := qti
-PRODUCT_MODEL := Sun for arm64
-#----------------------------------------------------------------------
-# wlan specific
-#----------------------------------------------------------------------
-ifeq ($(TARGET_USES_QMAA), true)
-ifneq ($(TARGET_USES_QMAA_OVERRIDE_WLAN), true)
-include device/qcom/wlan/default/wlan.mk
-else
-include device/qcom/wlan/sun/wlan.mk
-endif
-else
-include device/qcom/wlan/sun/wlan.mk
-endif
 
 #----------------------------------------------------------------------
 # perf specific
@@ -416,13 +402,6 @@ DEVICE_MANIFEST_SUN_FILES := device/qcom/sun/manifest_sun.xml
 
 DEVICE_MATRIX_FILE   := device/qcom/common/compatibility_matrix.xml
 
-# Enable Camera techpack with VSDK
-ifneq (,$(wildcard $(QCPATH)/chi-cdk))
-include $(QCPATH)/chi-cdk/configs/camera_techpack.mk
-else ifneq (,$(wildcard $(QCPATH)/camx/chi-cdk))
-include $(QCPATH)/camx/chi-cdk/configs/camera_techpack.mk
-endif
-
 #Audio DLKM
 #AUDIO_DLKM := audio_apr.ko
 #AUDIO_DLKM += audio_q6_pdr.ko
@@ -474,16 +453,6 @@ PRODUCT_VENDOR_MOVE_ENABLED := true
 PRODUCT_COMPATIBLE_PROPERTY_OVERRIDE := true
 #BOARD_SYSTEMSDK_VERSIONS := 34
 
-ifeq (true,$(BUILDING_WITH_VSDK))
-    ALLOW_MISSING_DEPENDENCIES := true
-    TARGET_SKIP_CURRENT_VNDK := true
-    -include vendor/qcom/vsdk_snapshots_config/config.mk
-else
-    RECOVERY_SNAPSHOT_VERSION := current
-    RAMDISK_SNAPSHOT_VERSION := current
-endif
-
-$(warning "BOARD_VNDK_VERSION = $(BOARD_VNDK_VERSION), RECOVERY_SNAPSHOT_VERSION=$(RECOVERY_SNAPSHOT_VERSION), RAMDISK_SNAPSHOT_VERSION=$(RAMDISK_SNAPSHOT_VERSION)")
 
 TARGET_MOUNT_POINTS_SYMLINKS := false
 
@@ -570,11 +539,3 @@ $(call inherit-product, $(SRC_TARGET_DIR)/product/updatable_apex.mk)
 
 #Enable virtualization service
 $(call inherit-product, packages/modules/Virtualization/build/apex/product_packages.mk)
-
-###################################################################################
-# This is the End of target.mk file.
-# Now, Pickup other split product.mk files:
-###################################################################################
-$(foreach vdefs, $(sort $(wildcard vendor/qcom/defs/product-defs/vendor/*.mk)), \
-    $(call inherit-product, $(vdefs)))
-###################################################################################
