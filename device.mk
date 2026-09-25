@@ -1,5 +1,7 @@
 TARGET_BOARD_PLATFORM := sun
 TARGET_BOOTLOADER_BOARD_NAME := sun
+#Lineage add-ons
+BOARD_USES_QCOM_HARDWARE := true
 
 BUILD_BROKEN_DUP_RULES := true
 
@@ -533,6 +535,10 @@ PRODUCT_PROPERTY_OVERRIDES += \
 # VM shutdown feature enablement
 PRODUCT_VENDOR_PROPERTIES += \
      ro.vendor.vm.ssr.enable=false
+
+# Soong namespaces
+PRODUCT_SOONG_NAMESPACES += \
+    $(LOCAL_PATH)
 
 # Enable support for APEX updates
 $(call inherit-product, $(SRC_TARGET_DIR)/product/updatable_apex.mk)
